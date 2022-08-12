@@ -1,5 +1,3 @@
-package lab1;
-
 public class HelloNumbers {
     public static void main(String[] args) {
         int x = 1;
@@ -9,5 +7,5 @@ public class HelloNumbers {
             total = total + x;
             x = x + 1;
         }
-	}
+    }
 } 
