@@ -151,7 +151,9 @@ public class Model extends Observable {
                 for (int i = 3; i > row; i -= 1) {
                     if (board.tile(col, i) == null) {
                         board.move(col, i, tile);
+                        tile = null;
                         changed = true;
+                        break;
                     } else if (board.tile(col, i) != null
                             && board.tile(col, i).value() == tile.value()) {
                         empty = true;
@@ -161,8 +163,10 @@ public class Model extends Observable {
                         if (empty && !ismerge[col][i]) {
                             score += tile.value() << 1;
                             board.move(col, i, tile);
+                            tile = null;
                             ismerge[col][i] = true;
                             changed = true;
+                            break;
                         }
                     } else {
                         continue;
