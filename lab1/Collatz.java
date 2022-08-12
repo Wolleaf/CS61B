@@ -1,4 +1,4 @@
-package Lab1;
+package lab1;
 
 import java.util.Scanner;
 
@@ -19,10 +19,7 @@ public class Collatz {
      * @param args none
      */
     public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
-        System.out.print("Please type in the number:");
-        int n = in.nextInt();
-        System.out.println();
+        int n = 5;
         while (n != 1) {
             System.out.print(n + " ");
             n = nextNumber(n);
