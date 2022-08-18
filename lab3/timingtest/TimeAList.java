@@ -23,7 +23,7 @@ public class TimeAList {
 
     public static void timeAListConstruction() {
         // TODO: YOUR CODE HERE
-        int[] counts = new int[16];
+        int[] counts = new int[8];
         for (int i = 0; i < counts.length; i += 1) {
             counts[i] = 1000 * (int) Math.pow(2, i);
         }
