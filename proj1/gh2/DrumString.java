@@ -47,8 +47,12 @@ public class DrumString {
     public void tic() {
         double firstItem = buffer.removeFirst();
         int operationNumber = StdRandom.uniform(0, 2);
-        if (operationNumber == 0) buffer.addLast((firstItem + buffer.get(0)) / 2 * DECAY);
-        else if (operationNumber == 1) buffer.addLast(-(firstItem + buffer.get(0)) / 2 * DECAY);
+        if (operationNumber == 0) {
+            buffer.addLast((firstItem + buffer.get(0)) / 2 * DECAY);
+        }
+        else if (operationNumber == 1) {
+            buffer.addLast(-(firstItem + buffer.get(0)) / 2 * DECAY);
+        }
     }
 
     /* Return the double at the front of the buffer. */

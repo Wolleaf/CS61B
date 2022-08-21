@@ -3,19 +3,24 @@ package deque;
 import java.util.Comparator;
 
 public class MaxArrayDeque<T> extends ArrayDeque<T> {
+    private T[] items;
+    private int size;
+    private int head;
+    private int tail;
     private Comparator<T> comparator;
 
-    public MaxArrayDeque() {
-        super();
-    }
-
     public MaxArrayDeque(Comparator<T> comparator) {
-        super();
+        items = (T[]) new Object[8];
+        size = 0;
+        head = 0;
+        tail = 1;
         this.comparator = comparator;
     }
 
     public T max() {
-        if (size == 0) { return null; }
+        if (size == 0) {
+            return null;
+        }
         int p = (head + 1) % items.length;
         T temp = items[p];
         for (int i = 0; i < size - 1; i += 1) {
@@ -26,7 +31,9 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     }
 
     public T max(Comparator<T> comparator) {
-        if (size == 0) { return null; }
+        if (size == 0) {
+            return null;
+        }
         int p = (head + 1) % items.length;
         T temp = items[p];
         for (int i = 0; i < size - 1; i += 1) {
