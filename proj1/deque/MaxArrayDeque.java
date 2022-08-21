@@ -33,6 +33,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         for (int i = 1; i < length; i++) {
             if (comparator.compare(temp, this.get(i)) < 0) {
                 temp = this.get(i);
+            }
         }
         return temp;
     }
