@@ -49,8 +49,7 @@ public class DrumString {
         int operationNumber = StdRandom.uniform(0, 2);
         if (operationNumber == 0) {
             buffer.addLast((firstItem + buffer.get(0)) / 2 * DECAY);
-        }
-        else if (operationNumber == 1) {
+        } else if (operationNumber == 1) {
             buffer.addLast(-(firstItem + buffer.get(0)) / 2 * DECAY);
         }
     }

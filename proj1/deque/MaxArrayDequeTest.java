@@ -1,10 +1,10 @@
 package deque;
 
-import jh61b.junit.In;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.util.Comparator;
+
+import static org.junit.Assert.assertEquals;
 
 public class MaxArrayDequeTest {
     @Test
@@ -64,6 +64,6 @@ public class MaxArrayDequeTest {
         maxArrayDeque.addLast("everything");
         maxArrayDeque.addLast("fight");
         maxArrayDeque.addLast("champion");
-        assertEquals("champion", maxArrayDeque.max());
+        assertEquals("champion", maxArrayDeque.max((o1, o2) -> o2.compareTo(o1)));
     }
 }

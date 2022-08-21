@@ -23,8 +23,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
         items[head] = value;
         if (head == 0) {
             head = items.length - 1;
-        }
-        else {
+        } else {
             head -= 1;
         }
         size += 1;
