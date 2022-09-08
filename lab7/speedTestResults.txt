@@ -1,0 +1,9 @@
+class bstmap.ULLMap: 0.45 sec
+class bstmap.BSTMap: 0.04 sec
+Java's Built-in TreeMap: 0.05 sec
+Java's Built-in HashMap: 0.06 sec
+
+--Stack Overflow -- couldn't add 100000 strings of length 1000.
+class bstmap.BSTMap: 0.51 sec
+Java's Built-in TreeMap: 0.52 sec
+Java's Built-in HashMap: 0.53 sec
