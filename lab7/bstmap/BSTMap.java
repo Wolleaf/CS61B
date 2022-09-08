@@ -15,19 +15,19 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         private BSTNode<S, U> parent;
 
         public BSTNode() {
-            this(null, null, null, null, null);
+            this(null, null, null, null);
         }
 
         public BSTNode(S key, U value) {
-            this(key, value, null, null, null);
+            this(key, value, null, null);
         }
 
-        public BSTNode(S key, U value, BSTNode<S, U> left, BSTNode<S, U> right, BSTNode<S, U> parent) {
+        public BSTNode(S key, U value, BSTNode<S, U> left, BSTNode<S, U> right) {
             this.key = key;
             this.value = value;
             this.left = left;
             this.right = right;
-            this.parent = parent;
+            this.parent = null;
         }
     }
 
@@ -40,17 +40,27 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     public BSTMap(K key, V value) {
-        this(key, value, null, null, null);
+        this(key, value, null, null);
     }
 
     public BSTMap(K key, V value, BSTNode<K, V> left, BSTNode<K, V> right) {
-        this(key, value, left, right, null);
-    }
-
-    public BSTMap(K key, V value, BSTNode<K, V> left, BSTNode<K, V> right, BSTNode<K, V> parent) {
-        bstNode = new BSTNode<>(key, value, left, right, parent);
+        bstNode = new BSTNode<>(key, value, left, right);
         size = 1;
     }
+
+    public void printInOrder() {
+        helpPrint(bstNode);
+    }
+
+    private void helpPrint(BSTNode<K, V> node) {
+        if (node == null) {
+            return;
+        }
+        helpPrint(node.left);
+        System.out.print(node.key + " ");
+        helpPrint(node.right);
+    }
+
     @Override
     public void clear() {
         bstNode = null;
