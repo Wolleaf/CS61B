@@ -39,15 +39,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         size = 0;
     }
 
-    public BSTMap(K key, V value) {
-        this(key, value, null, null);
-    }
-
-    public BSTMap(K key, V value, BSTNode<K, V> left, BSTNode<K, V> right) {
-        bstNode = new BSTNode<>(key, value, left, right);
-        size = 1;
-    }
-
     public void printInOrder() {
         helpPrint(bstNode);
     }
