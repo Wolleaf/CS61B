@@ -1,0 +1,32 @@
+ This program inserts random Strings of length L
+ Into different types of maps as <String, Integer> pairs.
+
+What would you like L to be?: 10000
+
+Enter # strings to insert into hashmap.ULLMap: hellolly
+Please enter a positive integer: 10000
+class hashmap.ULLMap: 0.73 sec
+
+Enter # strings to insert into your hashmap.MyHashMap: hellolly
+Please enter a positive integer: 10000
+class hashmap.MyHashMap: 0.52 sec
+
+Enter # strings to insert into Java's HashMap: hellolly
+Please enter a positive integer: 10000
+Java's Built-in HashMap: 0.51 sec
+
+
+ This program inserts lexicographically increasing Stringsinto Maps as <String, Integer> pairs.
+
+Enter # strings to insert into hashmap.ULLMap: 20000
+class hashmap.ULLMap: 0.74 sec
+
+Enter # strings to insert into hashmap.MyHashMap: 20000
+class hashmap.MyHashMap: 0.02 sec
+
+Enter # strings to insert into Java's HashMap: 20000
+Java's Built-in HashMap: 0.01 sec
+
+
+If we insert elements in random order, then BSTMap/TreeMap will be better.
+But if inserting in order, HashMap will be better.
