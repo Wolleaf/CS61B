@@ -1,6 +1,5 @@
 package hashmap;
 
-import java.awt.event.MouseAdapter;
 import java.util.*;
 
 /**
@@ -98,7 +97,6 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return new Collection[tableSize];
     }
 
-    // TODO: Implement the methods of the Map61B Interface below
 
     @Override
     public void clear() {
