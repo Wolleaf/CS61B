@@ -1,15 +1,10 @@
 package gitlet;
 
-import jdk.jshell.execution.Util;
-
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static gitlet.Utils.join;
-import static gitlet.Utils.restrictedDelete;
 
 
 /** Represents a gitlet repository.
@@ -38,12 +33,15 @@ public class Repository {
     private static final File REMOVESTAGE_DIR = join(GITLET_DIR, "removestage");
     /** The reference's directory. */
     private static final File REF_DIR = join(GITLET_DIR, "refs");
-    /** The branch's directory. */
+    /** The branches' directory. */
     private static final File BRANCH_DIR = join(REF_DIR, "heads");
+    /** The HEAD file */
+    private static final File HEAD = join(GITLET_DIR, "HEAD");
+    /** The BRANCH file */
+    private static final File BRANCH = join(GITLET_DIR, "BRANCH");
     /** The remote's directory. */
     private static final File REMOTE_DIR = join(REF_DIR, "remotes");
 
-    /* TODO: fill in the rest of this class. */
 
     /**
      * @return the gitlet repository's existence
@@ -69,8 +67,9 @@ public class Repository {
         // store the head pointer
         String sha1Code = Utils.sha1(Utils.serialize(lastCommit));
         lastCommit.setCommitID(sha1Code);
-        // create the head file
-        Utils.writeContents(join(GITLET_DIR, "HEAD"), "master");
+        // create the head file and branch file
+        Utils.writeContents(HEAD, "master");
+        Utils.writeContents(BRANCH, "master");
         // create the master file
         Utils.writeContents(join(BRANCH_DIR, "master"), sha1Code);
         // create the initial commit file
@@ -121,7 +120,7 @@ public class Repository {
         }
         // create the new commit and read the old commit
         Commit newCommit = new Commit(message, Utils.readContentsAsString(
-                join(BRANCH_DIR, Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))));
+                join(BRANCH_DIR, Utils.readContentsAsString(HEAD))));
         Commit lastCommit = readCommit();
         newCommit.cloneBlobs(lastCommit);
         newCommit.setMergeCommit(mergeCommitID);
@@ -151,7 +150,7 @@ public class Repository {
         newCommit.setCommitID(sha1Code);
         String[] branches = BRANCH_DIR.list();
         for (String branch : branches) {
-            if (branch.equals(Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))) {
+            if (branch.equals(Utils.readContentsAsString(HEAD))) {
                 Utils.writeContents(join(BRANCH_DIR, branch), sha1Code);
                 break;
             }
@@ -181,7 +180,6 @@ public class Repository {
 
     /**
      * the log of commit
-     * TODO the merge information need to be added
      */
     public static void log() {
         Commit commit = readCommit();
@@ -196,7 +194,6 @@ public class Repository {
 
     /**
      * the information of all commits
-     * TODO the merge information need to be added
      */
     public static void globalLog() {
         File[] allCommits = COMMIT_DIR.listFiles();
@@ -235,7 +232,7 @@ public class Repository {
         String[] branches = BRANCH_DIR.list();
         Arrays.sort(branches);
         for (String branch : branches) {
-            if (branch.equals(Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))) {
+            if (branch.equals(Utils.readContentsAsString(BRANCH))) {
                 System.out.print("*");
             }
             System.out.println(branch);
@@ -315,7 +312,7 @@ public class Repository {
         } else if (args.length == 4 && args[2].equals("--")) { // case 2
             checkOut(args[3], findFullCommitID(args[1])); // get the full ID
         } else if (args.length == 2) { // case 3
-            if (args[1].equals(Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))) {
+            if (args[1].equals(Utils.readContentsAsString(HEAD))) {
                 System.out.println("No need to checkout the current branch.");
                 System.exit(0);
             }
@@ -339,7 +336,7 @@ public class Repository {
             System.out.println("A branch with that name already exists.");
         } else {
             Utils.writeContents(join(BRANCH_DIR, branchName), Utils.readContentsAsString(
-                    join(BRANCH_DIR, Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))));
+                    join(BRANCH_DIR, Utils.readContentsAsString(HEAD))));
         }
     }
 
@@ -353,7 +350,7 @@ public class Repository {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
         }
-        if (branchName.equals(Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))) {
+        if (branchName.equals(Utils.readContentsAsString(HEAD))) {
             System.out.println("Cannot remove the current branch.");
             System.exit(0);
         }
@@ -384,7 +381,7 @@ public class Repository {
         } else if (!join(BRANCH_DIR, branchName).exists()) {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
-        } else if (branchName.equals(Utils.readContentsAsString(join(GITLET_DIR, "HEAD")))) {
+        } else if (branchName.equals(Utils.readContentsAsString(HEAD))) {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         } else if (untrackedFiles().size() != 0) {
@@ -421,6 +418,8 @@ public class Repository {
             } else if (!currentBlob.get(blob.getKey()).equals(blob.getValue())
                     && branchBlob.get(blob.getKey()) != null
                     && branchBlob.get(blob.getKey()).equals(blob.getValue())) {
+                currentBlob.remove(blob.getKey());
+                branchBlob.remove(blob.getKey());
                 continue; // seperated from 1st to avoid NullPointerException
             } else {
                 File currentFile = null;
@@ -454,20 +453,20 @@ public class Repository {
             }
         }
         commit(String.format("Merged %s into %s.", branchName,
-                Utils.readContentsAsString(join(GITLET_DIR, "HEAD"))), branchCommit.getCommitID());
+                Utils.readContentsAsString(HEAD)), branchCommit.getCommitID());
     }
 
     private static void mergeConflict(File currentFile, File branchFile) {
         StringBuilder newFileContent = new StringBuilder("<<<<<<< HEAD\n");
         if (currentFile == null) {
-            newFileContent.append("\n=======\n");
+            newFileContent.append("=======\n");
         } else {
-            newFileContent.append(Utils.readContentsAsString(currentFile) + "\n=======\n");
+            newFileContent.append(Utils.readContentsAsString(currentFile) + "=======\n");
         }
         if (branchFile == null) {
-            newFileContent.append(">>>>>>>");
+            newFileContent.append(">>>>>>>\n");
         } else {
-            newFileContent.append(Utils.readContentsAsString(branchFile) + "\n>>>>>>>");
+            newFileContent.append(Utils.readContentsAsString(branchFile) + ">>>>>>>\n");
         }
         Utils.writeContents(currentFile, newFileContent.toString());
     }
@@ -478,12 +477,11 @@ public class Repository {
      */
     public static Commit readCommit() {
         Commit commit = null;
-        if (join(COMMIT_DIR, Utils.readContentsAsString(join(GITLET_DIR, "HEAD"))).exists()) {
-            commit = Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(
-                    join(GITLET_DIR, "HEAD"))), Commit.class);
+        if (join(COMMIT_DIR, Utils.readContentsAsString(HEAD)).exists()) {
+            commit = Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(HEAD)), Commit.class);
         } else {
             commit = Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(
-                    join(BRANCH_DIR, Utils.readContentsAsString(join(GITLET_DIR, "HEAD"))))), Commit.class);
+                    join(BRANCH_DIR, Utils.readContentsAsString(HEAD)))), Commit.class);
         }
         return commit;
     }
@@ -624,11 +622,16 @@ public class Repository {
                 file.delete();
             }
         }
-        Utils.writeContents(join(GITLET_DIR, "HEAD"), commitIDOrName); // store the pointer
+        String headContent = Utils.readContentsAsString(HEAD);
+        if (join(COMMIT_DIR, headContent).exists()) {
+            Utils.writeContents(join(BRANCH_DIR, Utils.readContentsAsString(BRANCH)), headContent);
+        }
+        Utils.writeContents(HEAD, commitIDOrName); // store the pointer
         Commit nowBranchCommit; // choose the commitID or branchName
         if (join(BRANCH_DIR, commitIDOrName).exists()) {
             nowBranchCommit = Utils.readObject(join(COMMIT_DIR,
                     Utils.readContentsAsString(join(BRANCH_DIR, commitIDOrName))), Commit.class);
+            Utils.writeContents(BRANCH, commitIDOrName); // store the branch
         } else {
             nowBranchCommit = Utils.readObject(join(COMMIT_DIR, commitIDOrName), Commit.class);
         }

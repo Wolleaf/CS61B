@@ -32,10 +32,8 @@ public class Main {
                 Repository.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
                 Repository.add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
             case "commit":
                 if (args.length == 1 || args[1].length() == 0) {
                     System.out.println("Please enter a commit message.");

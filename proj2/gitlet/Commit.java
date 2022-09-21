@@ -27,8 +27,8 @@ public class Commit implements Serializable {
 
     /* TODO: fill in the rest of this class. */
     private String commitID;
-    private String lastCommit;
-    private String mergeCommit;
+    private String lastCommitID;
+    private String mergeCommitID;
     private Date timestamp;
     private LinkedHashMap<String, String> blobs;
 
@@ -37,11 +37,11 @@ public class Commit implements Serializable {
         timestamp = new Date(0);
     }
 
-    public Commit(String message, String lastCommit) {
+    public Commit(String message, String lastCommitID) {
         this.message = message;
-        this.lastCommit = lastCommit;
+        this.lastCommitID = lastCommitID;
         commitID = null;
-        mergeCommit = null;
+        mergeCommitID = null;
         timestamp = new Date();
         blobs = new LinkedHashMap<>();
     }
@@ -55,15 +55,15 @@ public class Commit implements Serializable {
     }
 
     public String getLastCommit() {
-        return lastCommit;
+        return lastCommitID;
     }
 
     public String getMergeCommit() {
-        return mergeCommit;
+        return mergeCommitID;
     }
 
-    public void setMergeCommit(String mergeCommit) {
-        this.mergeCommit = mergeCommit;
+    public void setMergeCommit(String mergeCommitID) {
+        this.mergeCommitID = mergeCommitID;
     }
 
     public Date getTimestamp() {
