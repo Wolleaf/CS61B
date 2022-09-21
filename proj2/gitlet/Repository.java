@@ -123,7 +123,7 @@ public class Repository {
                 join(BRANCH_DIR, Utils.readContentsAsString(HEAD))));
         Commit lastCommit = readCommit();
         newCommit.cloneBlobs(lastCommit);
-        newCommit.setMergeCommit(mergeCommitID);
+        newCommit.setMergeCommitID(mergeCommitID);
         // delete the file in the removestage
         String[] filesInRemoveStage = REMOVESTAGE_DIR.list();
         for (String fileName : filesInRemoveStage) {
@@ -159,19 +159,23 @@ public class Repository {
         Utils.writeObject(commitFile, newCommit);
     }
 
+    /**
+     * remove the file in the stage or in the CWD
+     * @param fileName the name of that file to be removed
+     */
     public static void rm(String fileName) {
         File fileInStage = join(STAGE_DIR, fileName);
-        if (fileInStage.exists()) {
+        if (fileInStage.exists()) { // if the file exists in stage, then just delete it from the stage.
             join(fileInStage, fileInStage.list()[0]).delete();
             fileInStage.delete();
             System.exit(0);
         }
         File fileInCWD = join(CWD, fileName);
         Commit nowCommit = readCommit();
-        if (nowCommit.getBlobs().containsKey(fileName) && fileInCWD.exists()) {
+        if (nowCommit.getBlobs().containsKey(fileName) && fileInCWD.exists()) { // put it in the removestage and delete it.
             Utils.writeContents(join(REMOVESTAGE_DIR, fileName), fileName);
             fileInCWD.delete();
-        } else if (nowCommit.getBlobs().containsKey(fileName) && !fileInCWD.exists()) {
+        } else if (nowCommit.getBlobs().containsKey(fileName) && !fileInCWD.exists()) { // just put in the removestage.
             Utils.writeContents(join(REMOVESTAGE_DIR, fileName), fileName);
         } else {
             System.out.println("No reason to remove the file.");
@@ -256,8 +260,10 @@ public class Repository {
         System.out.println();
         // modified file status
         System.out.println("=== Modifications Not Staged For Commit ===");
-        List<String> modifiedInformation = new ArrayList<>(); // create a list to store the information
-        for (Map.Entry<String, String> committed : nowCommit.getBlobs().entrySet()) { // check the blobs of the commit
+        // create a list to store the information
+        List<String> modifiedInformation = new ArrayList<>();
+        // check the blobs of the commit
+        for (Map.Entry<String, String> committed : nowCommit.getBlobs().entrySet()) {
             File fileInCWD = join(CWD, committed.getKey());
             File fileInStage = join(STAGE_DIR, committed.getKey());
             File fileInRemoveStage = join(REMOVESTAGE_DIR, committed.getKey());
@@ -385,11 +391,12 @@ public class Repository {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         } else if (untrackedFiles().size() != 0) {
-            System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.out.println("There is an untracked file in the way; " +
+                    "delete it, or add and commit it first.");
             System.exit(0);
-        }
+        } // failure cases over
         Commit currentCommit = readCommit();
-        Commit branchCommit = readCommit(branchName);
+        Commit branchCommit = readCommitFromBranchName(branchName);
         String ancestorID = getCommonAncestor(currentCommit, branchCommit);
         if (ancestorID.equals(currentCommit.getCommitID())) {
             System.out.println("Current branch fast-forwarded.");
@@ -398,29 +405,26 @@ public class Repository {
         } else if (ancestorID.equals(branchCommit.getCommitID())) {
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
-        }
+        } // now begin merge details
         Map<String, String> currentBlob = currentCommit.returnClonedBlobs();
         Map<String, String> branchBlob = branchCommit.returnClonedBlobs();
         Commit ancestorCommit = Utils.readObject(join(COMMIT_DIR, ancestorID), Commit.class);
         for (Map.Entry<String, String> blob : ancestorCommit.getBlobs().entrySet()) {
-            if (currentBlob.get(blob.getKey()) == null) {
+            if (currentBlob.get(blob.getKey()) == null
+            || !currentBlob.get(blob.getKey()).equals(blob.getValue())
+            && branchBlob.get(blob.getKey()) != null
+            && branchBlob.get(blob.getKey()).equals(blob.getValue())) {
                 currentBlob.remove(blob.getKey());
                 branchBlob.remove(blob.getKey());
                 continue;
             } else if (currentBlob.get(blob.getKey()).equals(blob.getValue())
-                    && branchBlob.get(blob.getKey()) == null) { // indicate currentBlob can not be null
+                    && branchBlob.get(blob.getKey()) == null) {
                 rm(blob.getKey());
             } else if (currentBlob.get(blob.getKey()).equals(blob.getValue())
                     && !branchBlob.get(blob.getKey()).equals(blob.getValue())) {
                 String[] command = {"checkout", branchCommit.getCommitID(), "--", blob.getKey()};
                 checkOut(command);
                 add(blob.getKey());
-            } else if (!currentBlob.get(blob.getKey()).equals(blob.getValue())
-                    && branchBlob.get(blob.getKey()) != null
-                    && branchBlob.get(blob.getKey()).equals(blob.getValue())) {
-                currentBlob.remove(blob.getKey());
-                branchBlob.remove(blob.getKey());
-                continue; // seperated from 1st to avoid NullPointerException
             } else {
                 File currentFile = null;
                 if (join(CWD, blob.getKey()).exists()) {
@@ -456,6 +460,11 @@ public class Repository {
                 Utils.readContentsAsString(HEAD)), branchCommit.getCommitID());
     }
 
+    /**
+     * a helper method to solve conflict between two files
+     * @param currentFile the head pointer file
+     * @param branchFile the other branch file
+     */
     private static void mergeConflict(File currentFile, File branchFile) {
         StringBuilder newFileContent = new StringBuilder("<<<<<<< HEAD\n");
         if (currentFile == null) {
@@ -478,7 +487,8 @@ public class Repository {
     public static Commit readCommit() {
         Commit commit = null;
         if (join(COMMIT_DIR, Utils.readContentsAsString(HEAD)).exists()) {
-            commit = Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(HEAD)), Commit.class);
+            commit = Utils.readObject(join(COMMIT_DIR,
+                    Utils.readContentsAsString(HEAD)), Commit.class);
         } else {
             commit = Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(
                     join(BRANCH_DIR, Utils.readContentsAsString(HEAD)))), Commit.class);
@@ -491,9 +501,18 @@ public class Repository {
      * @param branchName the branchName of the commit
      * @return commit
      */
-    public static Commit readCommit(String branchName) {
+    public static Commit readCommitFromBranchName(String branchName) {
         return Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(
                 join(BRANCH_DIR, branchName))), Commit.class);
+    }
+
+    /**
+     * read commit from the commitID
+     * @param commitID
+     * @return the commit with that commitID
+     */
+    public static Commit readCommitFromCommitID(String commitID) {
+        return Utils.readObject(join(COMMIT_DIR, commitID), Commit.class);
     }
 
     /**
@@ -516,7 +535,8 @@ public class Repository {
             System.out.println("File does not exist in that commit.");
             System.exit(0);
         }
-        File fileInObject = join(OBJECT_DIR, fileName, commit.getBlobs().get(fileName)); // the exact file
+        // the exact file
+        File fileInObject = join(OBJECT_DIR, fileName, commit.getBlobs().get(fileName));
         File fileInCWD = join(CWD, fileName);
         Utils.writeContents(fileInCWD, Utils.readContents(fileInObject));
     }
@@ -542,17 +562,23 @@ public class Repository {
         return null;
     }
 
+    /**
+     * get all ancestors of the commit use BFS.
+     * @param commit
+     * @return a list of ancestors' commitID
+     */
     private static List<String> getAncestors(Commit commit) {
         List<String> ancestors = new ArrayList<>();
         LinkedList<Commit> sequence = new LinkedList<>();
         sequence.add(commit);
+        // use level order traversal
         while (!sequence.isEmpty()) {
             ancestors.add(sequence.get(0).getCommitID());
             if (sequence.get(0).getLastCommit() != null) {
-                sequence.add(Utils.readObject(join(COMMIT_DIR, sequence.get(0).getLastCommit()), Commit.class));
+                sequence.add(readCommitFromCommitID(sequence.get(0).getLastCommit()));
             }
             if (sequence.get(0).getMergeCommit() != null) {
-                sequence.add(Utils.readObject(join(COMMIT_DIR, sequence.get(0).getMergeCommit()), Commit.class));
+                sequence.add(readCommitFromCommitID(sequence.get(0).getMergeCommit()));
             }
             sequence.remove();
         }
@@ -570,8 +596,7 @@ public class Repository {
         if (headInCommitFile.exists()) {
             nowCommit = Utils.readObject(headInCommitFile, Commit.class);
         } else {
-            nowCommit = Utils.readObject(join(COMMIT_DIR, Utils.readContentsAsString(join(BRANCH_DIR,
-                    headContent))), Commit.class);
+            nowCommit = readCommitFromBranchName(headContent);
         }
         LinkedList<String> allFileInCWD = new LinkedList<>();
         String[] stagedFileName = STAGE_DIR.list();
@@ -579,7 +604,8 @@ public class Repository {
         allFileInCWD.addAll(Arrays.asList(CWD.list()));
         allFileInCWD.remove("gitlet");
         allFileInCWD.remove(".gitlet");
-        for (String stagedFile : stagedFileName) { // remove the files already in the stagedfile
+        // remove the files already in the stagedfile
+        for (String stagedFile : stagedFileName) {
             allFileInCWD.remove(stagedFile);
         }
         // remove the files already been tracked
@@ -614,7 +640,8 @@ public class Repository {
      */
     private static void checkTo(String commitIDOrName) {
         if (untrackedFiles().size() != 0) {
-            System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.out.println("There is an untracked file in the way; " +
+                    "delete it, or add and commit it first.");
             System.exit(0);
         }
         for (File file : CWD.listFiles()) { // clear the CWD directory
@@ -629,8 +656,7 @@ public class Repository {
         Utils.writeContents(HEAD, commitIDOrName); // store the pointer
         Commit nowBranchCommit; // choose the commitID or branchName
         if (join(BRANCH_DIR, commitIDOrName).exists()) {
-            nowBranchCommit = Utils.readObject(join(COMMIT_DIR,
-                    Utils.readContentsAsString(join(BRANCH_DIR, commitIDOrName))), Commit.class);
+            nowBranchCommit = readCommitFromBranchName(commitIDOrName);
             Utils.writeContents(BRANCH, commitIDOrName); // store the branch
         } else {
             nowBranchCommit = Utils.readObject(join(COMMIT_DIR, commitIDOrName), Commit.class);

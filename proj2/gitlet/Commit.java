@@ -1,6 +1,5 @@
 package gitlet;
 
-// TODO: any imports you need here
 
 import java.io.Serializable;
 import java.util.Date;
@@ -8,15 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author Wolleaf Lee
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
-     *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
@@ -25,7 +21,6 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     private String message;
 
-    /* TODO: fill in the rest of this class. */
     private String commitID;
     private String lastCommitID;
     private String mergeCommitID;
@@ -62,7 +57,7 @@ public class Commit implements Serializable {
         return mergeCommitID;
     }
 
-    public void setMergeCommit(String mergeCommitID) {
+    public void setMergeCommitID(String mergeCommitID) {
         this.mergeCommitID = mergeCommitID;
     }
 
