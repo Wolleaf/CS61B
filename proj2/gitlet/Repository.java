@@ -165,17 +165,20 @@ public class Repository {
      */
     public static void rm(String fileName) {
         File fileInStage = join(STAGE_DIR, fileName);
-        if (fileInStage.exists()) { // if the file exists in stage, then just delete it from the stage.
+        // if the file exists in stage, then just delete it from the stage.
+        if (fileInStage.exists()) {
             join(fileInStage, fileInStage.list()[0]).delete();
             fileInStage.delete();
             System.exit(0);
         }
         File fileInCWD = join(CWD, fileName);
         Commit nowCommit = readCommit();
-        if (nowCommit.getBlobs().containsKey(fileName) && fileInCWD.exists()) { // put it in the removestage and delete it.
+        // put it in the removestage and delete it.
+        if (nowCommit.getBlobs().containsKey(fileName) && fileInCWD.exists()) {
             Utils.writeContents(join(REMOVESTAGE_DIR, fileName), fileName);
             fileInCWD.delete();
-        } else if (nowCommit.getBlobs().containsKey(fileName) && !fileInCWD.exists()) { // just put in the removestage.
+        } else if (nowCommit.getBlobs().containsKey(fileName) && !fileInCWD.exists()) {
+            // just put it in the removestage.
             Utils.writeContents(join(REMOVESTAGE_DIR, fileName), fileName);
         } else {
             System.out.println("No reason to remove the file.");
@@ -391,8 +394,8 @@ public class Repository {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         } else if (untrackedFiles().size() != 0) {
-            System.out.println("There is an untracked file in the way; " +
-                    "delete it, or add and commit it first.");
+            System.out.println("There is an untracked file in the way; "
+                    + "delete it, or add and commit it first.");
             System.exit(0);
         } // failure cases over
         Commit currentCommit = readCommit();
@@ -411,9 +414,9 @@ public class Repository {
         Commit ancestorCommit = Utils.readObject(join(COMMIT_DIR, ancestorID), Commit.class);
         for (Map.Entry<String, String> blob : ancestorCommit.getBlobs().entrySet()) {
             if (currentBlob.get(blob.getKey()) == null
-            || !currentBlob.get(blob.getKey()).equals(blob.getValue())
-            && branchBlob.get(blob.getKey()) != null
-            && branchBlob.get(blob.getKey()).equals(blob.getValue())) {
+                || !currentBlob.get(blob.getKey()).equals(blob.getValue())
+                && branchBlob.get(blob.getKey()) != null
+                && branchBlob.get(blob.getKey()).equals(blob.getValue())) {
                 currentBlob.remove(blob.getKey());
                 branchBlob.remove(blob.getKey());
                 continue;
@@ -640,8 +643,8 @@ public class Repository {
      */
     private static void checkTo(String commitIDOrName) {
         if (untrackedFiles().size() != 0) {
-            System.out.println("There is an untracked file in the way; " +
-                    "delete it, or add and commit it first.");
+            System.out.println("There is an untracked file in the way; "
+                    + "delete it, or add and commit it first.");
             System.exit(0);
         }
         for (File file : CWD.listFiles()) { // clear the CWD directory
@@ -661,7 +664,8 @@ public class Repository {
         } else {
             nowBranchCommit = Utils.readObject(join(COMMIT_DIR, commitIDOrName), Commit.class);
         }
-        for (Map.Entry<String, String> blob : nowBranchCommit.getBlobs().entrySet()) { // add the files
+        // add the files
+        for (Map.Entry<String, String> blob : nowBranchCommit.getBlobs().entrySet()) {
             File fileInObject = join(OBJECT_DIR, blob.getKey(), blob.getValue());
             Utils.writeContents(join(CWD, blob.getKey()), Utils.readContents(fileInObject));
         }
